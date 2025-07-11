@@ -1,5 +1,7 @@
 #include <iostream>
+#include <string>
 #include <fstream>
+#include <sstream>
 using namespace std;
 
 class student{
@@ -28,13 +30,24 @@ class student{
                 cout<<"\nError opening file!";
             }
         }
-        void show_values_fromFile(){
+        static void show_values_fromFile(){
             ifstream fin("students.csv");
             if (fin.is_open()){
-                if(roll_no==0 && name=="" && marks==0){
-                    getline(fin,roll_no,',') && getline(fin,name,',') && getline(fin,marks);
+                string line;
+                cout << "\nStored Student Records:\n";
+                cout << "---------------------------\n";
+                while (getline(fin, line)) {
+                    stringstream ss(line);
+                    string rollStr, name, marksStr;
+                    getline(ss, rollStr, ',');
+                    getline(ss, name, ',');
+                    getline(ss, marksStr, ',');
+                    
+                    int roll = stoi(rollStr);
+                    float marks = stof(marksStr);
+                    cout << "Roll No: " << roll << "\tName: " << name << "\tMarks: " << marks << endl;
                 }
-
+                fin.close();
             }
             else {
                 cout<<"\nError opening file!";
