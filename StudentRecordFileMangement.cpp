@@ -18,7 +18,8 @@ class student{
         void input_values(){
             cout<<"\nEnter values as follow:";
             cout<<"\nRoll_no.:"; cin>>roll_no;
-            cout<<"\nName :"; cin>>name;
+            cout<<"\nName :";
+            getline(cin >> ws, name);
             cout<<"\nMarks :"; cin>>marks;
         }
         void store_values_inFile(){
@@ -26,6 +27,7 @@ class student{
             if (fout.is_open()){
                 fout<< roll_no <<","<<name<<","<<marks<<endl;
                 fout.close();
+                cout<<"\nValues stored in file successfully\n";
             } else {
                 cout<<"\nError opening file!";
             }
@@ -56,11 +58,15 @@ class student{
 };
 
 void Case1(){
-
+    student s;
+    s.input_values();
+    s.store_values_inFile();
+    system("pause");
 }
 
 void Case2(){
-
+    student::show_values_fromFile();
+    system("pause");
 }
 
 int main(){
@@ -77,15 +83,19 @@ int main(){
 
     switch(choice){
         case 1:
+           Case1();
+           goto mn;
 
         case 2:
+           Case2();
+           goto mn;
 
         case 3: 
            exit(0);
 
         default: 
-           cout<<"\nINVALID CHOICE! \nTry again! press any key to continue...";
-           getchar();
+           cout<<"\nINVALID CHOICE! \nTry again!\n";
+           system("pause");
            goto mn;
         
     }
