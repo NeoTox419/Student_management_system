@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <vector>
 using namespace std;
 
 class student{
@@ -15,6 +16,7 @@ class student{
             name="";
             marks=0;
         }
+
         void input_values(){
             cout<<"\nEnter values as follow:";
             cout<<"\nRoll_no.:"; cin>>roll_no;
@@ -22,6 +24,7 @@ class student{
             getline(cin >> ws, name);
             cout<<"\nMarks :"; cin>>marks;
         }
+
         void store_values_inFile(){
             ofstream fout("students.csv", ios::app);
             if (fout.is_open()){
@@ -32,6 +35,7 @@ class student{
                 cout<<"\nError opening file!";
             }
         }
+        
         static void show_values_fromFile(){
             ifstream fin("students.csv");
             if (fin.is_open()){
@@ -58,9 +62,43 @@ class student{
 };
 
 void Case1(){
-    student s;
-    s.input_values();
-    s.store_values_inFile();
+    int choice;
+
+    system("cls");
+    cout<<"\n1. Single Entry";
+    cout<<"\n2. Multiple Entry";
+    cout<<"\n3. Back to Menu";
+    cout<<"\n\n>>"; cin>>choice;
+
+    switch(choice){
+        case 1:{
+            student s;
+            s.input_values();
+            s.store_values_inFile();
+            break;
+        }
+
+        case 2:{
+            int n;
+            cout<<"\nEnter the number students: ";
+            cin>>n;
+            vector<student> s(n);
+
+            for(int i=0; i<n; i++){
+                cout<<"\n--Student "<<i+1<<" --";
+                s[i].input_values();
+                s[i].store_values_inFile();
+            }
+
+            break;
+        }
+        
+        case 3:{
+            return;
+        }
+
+        default:
+    }
     system("pause");
 }
 
