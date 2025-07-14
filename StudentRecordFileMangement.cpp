@@ -98,8 +98,9 @@ void Case1(){
         }
 
         default:
+           cout<<"Invalid option. Try again!!";
     }
-    system("pause");
+    return;
 }
 
 void Case2(){
