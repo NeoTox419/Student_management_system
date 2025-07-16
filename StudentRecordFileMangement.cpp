@@ -3,6 +3,9 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <cctype>
+#include <limits>
+#include <algorithm>
 using namespace std;
 
 class student{
@@ -19,10 +22,44 @@ class student{
 
         void input_values(){
             cout<<"\nEnter values as follow:";
-            cout<<"\nRoll_no.:"; cin>>roll_no;
-            cout<<"\nName :";
-            getline(cin >> ws, name);
-            cout<<"\nMarks :"; cin>>marks;
+            
+            // Roll number: validate positive integer
+            while (true){
+                cout<<"\nRoll_no.: ";
+                if ( cin >> roll_no && roll_no > 0)
+                   break;
+                else {
+                    cout<< "Invalid roll number. Please enter a positie integer. \n";
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                }
+            }
+            
+            // Name: validate alphabetic with spaces
+            while (true){
+                cout<<"\nName: ";
+                getline(cin >> ws, name);
+
+                if(!name.empty() && all_of(name.begin(), name.end(), [](char c){
+                    return isalpha(c) || isspace(c);
+                })) {
+                    break;
+                } else {
+                    cout<< "Invalid name. Use letters and space only. \n";
+                }
+            }
+
+            // Marks: validate float between 0 and 100
+            while(true) {
+                cout<< "\nMarks: ";
+                if (cin >> marks && marks >= 0 && marks <= 100)
+                   break;
+                else {
+                    cout<< "Invalid marks. Enter a number between 0 and 100.\n";
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(),'\n');
+                }
+            }
         }
 
         void store_values_inFile(){
