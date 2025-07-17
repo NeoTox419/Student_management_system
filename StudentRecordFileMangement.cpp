@@ -8,6 +8,27 @@
 #include <algorithm>
 using namespace std;
 
+bool rollNumberExists(int roll){
+    ifstream file("students.csv");
+    if (!file.is_open()) return false;
+
+    string line;
+    while (getline(file,line)){
+        stringstream ss(line);
+        string rollStr;
+        getline(ss, rollStr,','); //geting role number from line
+
+        try{
+            int existingRoll = stoi(rollStr);
+            if (existingRoll == roll)
+               return true;
+        } catch (...){
+            continue; 
+        }
+    }
+    return false;
+}
+
 class student{
     private:
         int roll_no;
@@ -26,8 +47,12 @@ class student{
             // Roll number: validate positive integer
             while (true){
                 cout<<"\nRoll_no.: ";
-                if ( cin >> roll_no && roll_no > 0)
-                   break;
+                if ( cin >> roll_no && roll_no > 0){
+                    if (!rollNumberExists(roll_no))
+                       break;
+                    else 
+                       cout<< "Roll number already exists. Enter a different one.\n";
+                }
                 else {
                     cout<< "Invalid roll number. Please enter a positie integer. \n";
                     cin.clear();
@@ -155,7 +180,11 @@ int main(){
     cout<<"\n2. View student details";
     cout<<"\n3. exit";
     cout<<"\n\n Enter choice>>";
-    cin>>choice;
+    while (!(cin>> choice)){
+        cout<< "Invalid input! Enter a number: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
 
     switch(choice){
         case 1:
