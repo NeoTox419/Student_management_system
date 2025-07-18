@@ -34,6 +34,7 @@ class student{
         int roll_no;
         string name;
         float marks;
+        
     public:
         student(){
             roll_no=0;
@@ -170,6 +171,73 @@ void Case2(){
     system("pause");
 }
 
+void edit_marks() {
+    string line;
+    int roll_input, new_marks;
+    bool found = false;
+
+    ifstream fin("students.csv");
+    if (!fin) {
+        cout << "\nNo student records found! 'students.csv' does not exist.\n";
+        system("pause");
+        return;
+    }
+
+    cout << "\nEnter roll number to edit marks: ";
+    while (!(cin >> roll_input)) {
+        cout << "Invalid input! Please enter a valid roll number: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    ofstream temp("temp.csv");
+    if (!temp) {
+        cout << "\nError creating temporary file!\n";
+        fin.close();
+        system("pause");
+        return;
+    }
+
+    while (getline(fin, line)) {
+        stringstream ss(line);
+        string r_str, n_str, m_str;
+        getline(ss, r_str, ',');
+        getline(ss, n_str, ',');
+        getline(ss, m_str, ',');
+
+        int file_roll = stoi(r_str);
+        if (file_roll == roll_input) {
+            found = true;
+            cout << "\nCurrent Marks: " << m_str;
+            cout << "\nEnter new marks: ";
+            while (true) {
+                if (cin >> new_marks && new_marks >= 0 && new_marks <= 100)
+                    break;
+                cout << "Invalid input! Enter numeric marks between 0 and 100: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+            temp << file_roll << "," << n_str << "," << new_marks << endl;
+        } else {
+            temp << line << endl;
+        }
+    }
+
+    fin.close();
+    temp.close();
+
+    if (found) {
+        remove("students.csv");
+        rename("temp.csv", "students.csv");
+        cout << "\nMarks updated successfully!\n";
+    } else {
+        remove("temp.csv");
+        cout << "\nStudent with Roll No. " << roll_input << " not found.\n";
+    }
+
+    system("pause");
+}
+
 int main(){
     int choice;
     mn:
@@ -178,7 +246,8 @@ int main(){
     cout<<"\n\t Menu";
     cout<<"\n1. Enter student details";
     cout<<"\n2. View student details";
-    cout<<"\n3. exit";
+    cout<<"\n3. Edit student marks";
+    cout<<"\n4. exit";
     cout<<"\n\n Enter choice>>";
     while (!(cin>> choice)){
         cout<< "Invalid input! Enter a number: ";
@@ -194,8 +263,12 @@ int main(){
         case 2:
            Case2();
            goto mn;
+        
+        case 3:
+           edit_marks();
+           goto mn;
 
-        case 3: 
+        case 4: 
            exit(0);
 
         default: 
