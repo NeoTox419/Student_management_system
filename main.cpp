@@ -1,0 +1,46 @@
+#include "student.h"
+#include <iostream>
+#include <limits>
+using namespace std;
+
+int main(){
+    int choice;
+    mn:
+    system("cls");
+    cout<<"\tWelcome to Studnet Mangement System";
+    cout<<"\n\t Menu";
+    cout<<"\n1. Enter student details";
+    cout<<"\n2. View student details";
+    cout<<"\n3. Edit student marks";
+    cout<<"\n4. exit";
+    cout<<"\n\n Enter choice>>";
+    while (!(cin>> choice)){
+        cout<< "Invalid input! Enter a number: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    switch(choice){
+        case 1:
+           enter_student_details();
+           goto mn;
+
+        case 2:
+           show_student_details();
+           goto mn;
+        
+        case 3:
+           edit_marks();
+           goto mn;
+
+        case 4: 
+           exit(0);
+
+        default: 
+           cout<<"\nINVALID CHOICE! \nTry again!\n";
+           system("pause");
+           goto mn;
+        
+    }
+    return 0;
+}
