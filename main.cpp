@@ -29,9 +29,12 @@ int main(){
            show_student_details();
            goto mn;
         
-        case 3:
-           edit_marks();
-           goto mn;
+        case 3:{
+            string filename = select_existing_file();
+            if(filename.empty()) break;
+            edit_marks(filename);
+            goto mn;
+        }
 
         case 4: 
            exit(0);

@@ -7,10 +7,12 @@
 #include <string>
 #include <cctype>
 #include <limits>
+#include <filesystem>
 using namespace std;
+namespace fs = filesystem;
 
-bool student::rollNumberExists(int roll){
-    ifstream file("students.csv");
+bool student::rollNumberExists(int roll,const string& filename){
+    ifstream file(filename);
     if (!file.is_open()) return false;
 
     string line;
@@ -30,14 +32,14 @@ bool student::rollNumberExists(int roll){
     return false;
 }
 
-void student::input_values(){
+void student::input_values(const string& filename){
     cout<<"\nEnter values as follow:";
     
     // Roll number: validate positive integer
     while (true){
         cout<<"\nRoll_no.: ";
         if ( cin >> roll_no && roll_no > 0){
-            if (!rollNumberExists(roll_no))
+            if (!rollNumberExists(roll_no,filename))
                break;
             else 
                cout<< "Roll number already exists. Enter a different one.\n";
@@ -76,8 +78,8 @@ void student::input_values(){
     }
 }
 
-void student::store_values_inFile(){
-    ofstream fout("students.csv", ios::app);
+void student::store_values_inFile(const string& filename){
+    ofstream fout(filename, ios::app);
     if (fout.is_open()){
         fout<< roll_no <<","<<name<<","<<marks<<endl;
         fout.close();
@@ -87,28 +89,23 @@ void student::store_values_inFile(){
     }
 }
 
-void student::show_values_fromFile(){
-    ifstream fin("students.csv");
-    if (fin.is_open()){
-        string line;
-        cout << "\nStored Student Records:\n";
-        cout << "---------------------------\n";
-        while (getline(fin, line)) {
-            stringstream ss(line);
-            string rollStr, name, marksStr;
-            getline(ss, rollStr, ',');
-            getline(ss, name, ',');
-            getline(ss, marksStr, ',');
-            
-            int roll = stoi(rollStr);
-            float marks = stof(marksStr);
-            cout << "Roll No: " << roll << "\tName: " << name << "\tMarks: " << marks << endl;
-        }
-        fin.close();
+void student::show_values_fromFile(const string& filename){
+    ifstream fin(filename);
+    string line;
+    cout << "\nStored Student Records:\n";
+    cout << "---------------------------\n";
+    while (getline(fin, line)) {
+        stringstream ss(line);
+        string rollStr, name, marksStr;
+        getline(ss, rollStr, ',');
+        getline(ss, name, ',');
+        getline(ss, marksStr, ',');
+
+        int roll = stoi(rollStr);
+        float marks = stof(marksStr);
+        cout << "Roll No: " << roll << "\tName: " << name << "\tMarks: " << marks << endl;
     }
-    else {
-        cout<<"\nError opening file!";
-    }
+    fin.close();
 }
 
 void enter_student_details(){
@@ -122,13 +119,19 @@ void enter_student_details(){
 
     switch(choice){
         case 1:{
+            string filename = create_or_select_file(); //allows creating or using existing file
+            if (filename.empty()) break;
+
             student s;
-            s.input_values();
-            s.store_values_inFile();
+            s.input_values(filename);
+            s.store_values_inFile(filename);
             break;
         }
 
         case 2:{
+            string filename = create_or_select_file(); //allows creating or using existing file
+            if (filename.empty()) break;
+
             int n;
             cout<<"\nEnter the number students: ";
             cin>>n;
@@ -136,8 +139,8 @@ void enter_student_details(){
 
             for(int i=0; i<n; i++){
                 cout<<"\n--Student "<<i+1<<" --";
-                s[i].input_values();
-                s[i].store_values_inFile();
+                s[i].input_values(filename);
+                s[i].store_values_inFile(filename);
             }
 
             break;
@@ -154,18 +157,21 @@ void enter_student_details(){
 }
 
 void show_student_details(){
-    student::show_values_fromFile();
+    string filename = select_existing_file();
+    if(filename.empty()) return;
+
+    student::show_values_fromFile(filename);
     system("pause");
 }
 
-void edit_marks() {
+void edit_marks(const string& filename) {
     string line;
     int roll_input, new_marks;
     bool found = false;
 
-    ifstream fin("students.csv");
+    ifstream fin(filename);
     if (!fin) {
-        cout << "\nNo student records found! 'students.csv' does not exist.\n";
+        cout << "\nNo student records found! "<<filename<<" does not exist.\n";
         system("pause");
         return;
     }
@@ -177,7 +183,7 @@ void edit_marks() {
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 
-    ofstream temp("temp.csv");
+    ofstream temp("data/temp.csv");
     if (!temp) {
         cout << "\nError creating temporary file!\n";
         fin.close();
@@ -214,13 +220,96 @@ void edit_marks() {
     temp.close();
 
     if (found) {
-        remove("students.csv");
-        rename("temp.csv", "students.csv");
+        remove(filename.c_str());
+        rename("data/temp.csv", filename.c_str());
         cout << "\nMarks updated successfully!\n";
     } else {
-        remove("temp.csv");
+        remove("data/temp.csv");
         cout << "\nStudent with Roll No. " << roll_input << " not found.\n";
     }
 
     system("pause");
+}
+
+std::string create_or_select_file(){
+    string filename;
+    cout << "\n1. Create New File";
+    cout << "\n2. Use Existing File";
+    cout << "\nEnter your choice: ";
+
+    int choice;
+    while (!(cin >> choice) || (choice != 1 && choice != 2)) {
+        cout << "Invalid input! Enter 1 or 2: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    cin.ignore();
+
+    if (choice == 1) {
+        cout << "Enter new filename (without .csv): ";
+        getline(cin, filename);
+        filename += ".csv";
+    } else {
+        vector<string> csv_files;
+        for (const auto& entry : fs::directory_iterator("data")) {
+            if (entry.path().extension() == ".csv") {
+                csv_files.push_back(entry.path().filename().string());
+            }
+        }
+
+        if (csv_files.empty()) {
+            cout << "No CSV files found. Please create a new file instead.\n";
+            return create_or_select_file(); // restart selection
+        }
+
+        cout << "\nAvailable .csv files:\n";
+        for (size_t i = 0; i < csv_files.size(); ++i) {
+            cout << i + 1 << ". " << csv_files[i] << endl;
+        }
+
+        int file_choice;
+        cout << "Select a file by number: ";
+        while (!(cin >> file_choice) || file_choice < 1 || file_choice > csv_files.size()) {
+            cout << "Invalid choice! Enter a number between 1 and " << csv_files.size() << ": ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+
+        filename = csv_files[file_choice - 1];
+        cin.ignore();
+    }
+
+    return filename = "data/" + filename;
+}
+
+std::string select_existing_file(){
+    vector<string> csv_files;
+
+    for (const auto& entry : fs::directory_iterator("data")) {
+        if (entry.path().extension() == ".csv") {
+            csv_files.push_back(entry.path().filename().string());
+        }
+    }
+
+    if (csv_files.empty()) {
+        cout << "\nNo student data found. Please add students first.\n";
+        return "";
+    }
+
+    cout << "\nAvailable data files:\n";
+    for (size_t i = 0; i < csv_files.size(); ++i) {
+        cout << i + 1 << ". " << csv_files[i] << endl;
+    }
+
+    int choice;
+    cout << "Select a file by number: ";
+    while (!(cin >> choice) || choice < 1 || choice > csv_files.size()) {
+        cout << "Invalid choice! Try again: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    cin.ignore();
+    return "data/" + csv_files[choice - 1];
 }
