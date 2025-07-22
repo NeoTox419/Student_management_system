@@ -92,6 +92,7 @@ void student::store_values_inFile(const string& filename){
 void student::show_values_fromFile(const string& filename){
     ifstream fin(filename);
     string line;
+    sort_file_by_roll(filename);
     cout << "\nStored Student Records:\n";
     cout << "---------------------------\n";
     while (getline(fin, line)) {
@@ -312,4 +313,84 @@ std::string select_existing_file(){
 
     cin.ignore();
     return "data/" + csv_files[choice - 1];
+}
+
+void student::sort_file_by_roll(const string& filename){
+    ifstream fin(filename);
+    if (!fin.is_open()){
+        std::cout <<"\nError opening file for sorting!\n";
+        return;
+    }
+
+    vector<student> students;
+    string line;
+
+    while(getline(fin, line)){
+        stringstream ss(line);
+        string rollStr, name, marksStr;
+
+        getline(ss, rollStr,',');
+        getline(ss, name, ',');
+        getline(ss, marksStr,',');
+
+        student s;
+        s.roll_no = stoi(rollStr);
+        s.name = name;
+        s.marks = stof(marksStr);
+        students.push_back(s);
+    }
+
+    fin.close();
+
+    sort(students.begin(), students.end(), [](const student& a, const student& b){
+        return a.roll_no < b.roll_no;
+    });
+
+    ofstream fout(filename);
+    for (const auto& s : students){
+        fout<< s.roll_no <<","<< s.name <<","<< s.marks <<"\n";
+    }
+
+    fout.close();
+}
+
+void student::search_by_roll(const string& filename){
+    int targetRoll;
+    cout<<"\nEnter roll number to search: ";
+    while(!(cin>>targetRoll) || targetRoll <= 0){
+        cout<<"Invalid input. Enter a positive integer: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    ifstream fin(filename);
+    if (!fin.is_open()){
+        cout<<"\nError opening file!\n";
+        return;
+    }
+
+    string line;
+    bool found = false;
+    while (getline(fin, line)){
+        stringstream ss(line);
+        string rollStr, name, marksStr;
+        getline(ss,rollStr,',');
+        getline(ss,name,',');
+        getline(ss,marksStr);
+
+        int roll = stoi(rollStr);
+        if (roll == targetRoll){
+            float marks = stof(marksStr);
+            cout<<"\nSstudent Found:\n";
+            cout<<"Roll No: "<<roll <<"\tName: "<< name <<"\tMarks: "<<marks<<endl;
+            found = true;
+            break;
+        }
+    }
+
+    if(!found){
+        cout<<"\nStudent with roll number "<<targetRoll<<" not found.\n";
+    }
+    fin.close();
+    system("pause");
 }

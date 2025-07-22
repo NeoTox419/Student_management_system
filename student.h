@@ -21,6 +21,8 @@ class student{
        void input_values(const string& filename);
        void store_values_inFile(const string& filename);
        static void show_values_fromFile(const string& filename);
+       static void sort_file_by_roll(const string& filename);
+       static void search_by_roll(const string& filename);
 };
 
 void enter_student_details();

@@ -12,7 +12,8 @@ int main(){
     cout<<"\n1. Enter student details";
     cout<<"\n2. View student details";
     cout<<"\n3. Edit student marks";
-    cout<<"\n4. exit";
+    cout<<"\n4. Search a student";
+    cout<<"\n5. exit";
     cout<<"\n\n Enter choice>>";
     while (!(cin>> choice)){
         cout<< "Invalid input! Enter a number: ";
@@ -36,7 +37,15 @@ int main(){
             goto mn;
         }
 
-        case 4: 
+        case 4:{
+            string filenanme = select_existing_file();
+            if(!filenanme.empty()){
+                student::search_by_roll(filenanme);
+            }
+            goto mn;
+        }
+
+        case 5: 
            exit(0);
 
         default: 
